@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Maria — Chat do Produtor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+<style>
+  :root{--gd:#0B4D2E;--gm:#1A8F50;--gl:#C8EDD8;--gp:#EDF7F1;--r:#C0392B;--rl:#FDECEA;--g100:#F5F6F8;--g200:#E8EAED;--g400:#9AA0AB;--wh:#FFFFFF;--tx:#1A1E26;--rad:18px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--gp);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;}
+  .container{width:100%;max-width:420px;display:flex;flex-direction:column;height:96vh;max-height:780px;background:var(--wh);border-radius:24px;box-shadow:0 8px 40px rgba(11,61,110,.13);overflow:hidden;}
+  .hdr{background:var(--gd);padding:16px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+  .avt{width:44px;height:44px;border-radius:50%;background:var(--gm);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:19px;color:var(--wh);position:relative;flex-shrink:0;}
+  .avt::after{content:'';position:absolute;bottom:2px;right:2px;width:9px;height:9px;border-radius:50%;background:#2ECC71;border:2px solid var(--gd);}
+  .hdr-info{flex:1;}
+  .hdr-name{font-size:15px;font-weight:600;color:var(--wh);}
+  .hdr-sub{font-size:10.5px;color:var(--gl);opacity:.85;margin-top:2px;}
+  .badge{font-size:10.5px;background:rgba(255,255,255,.12);color:var(--gl);padding:3px 10px;border-radius:20px;}
+  .msgs{flex:1;overflow-y:auto;padding:16px 14px 8px;display:flex;flex-direction:column;gap:9px;scroll-behavior:smooth;}
+  .msgs::-webkit-scrollbar{width:3px;}.msgs::-webkit-scrollbar-thumb{background:var(--g200);border-radius:3px;}
+  .ddiv{text-align:center;font-size:10px;color:var(--g400);margin:2px 0;}
+  .msg{display:flex;flex-direction:column;max-width:84%;animation:fu .22s ease forwards;}
+  @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .msg.bot{align-self:flex-start;}.msg.usr{align-self:flex-end;}
+  .bbl{padding:9px 13px;font-size:13.5px;line-height:1.55;border-radius:var(--rad);}
+  .bot .bbl{background:var(--g100);color:var(--tx);border-bottom-left-radius:4px;}
+  .usr .bbl{background:var(--gm);color:var(--wh);border-bottom-right-radius:4px;}
+  .mtime{font-size:9.5px;color:var(--g400);margin-top:2px;padding:0 3px;}
+  .usr .mtime{text-align:right;}
+  .typ-bbl{background:var(--g100);border-radius:var(--rad);border-bottom-left-radius:4px;padding:11px 14px;display:flex;gap:5px;align-items:center;}
+  .tdot{width:6px;height:6px;border-radius:50%;background:var(--g400);animation:bk 1.3s infinite;}
+  .tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
+  @keyframes bk{0%,60%,100%{opacity:.3;transform:scale(1)}30%{opacity:1;transform:scale(1.2)}}
+  .qarea{padding:7px 14px 4px;display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0;}
+  .qarea.hidden{display:none;}
+  .qbtn{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:6px 12px;border:1.5px solid var(--gm);border-radius:20px;background:transparent;color:var(--gm);cursor:pointer;transition:all .15s;white-space:nowrap;}
+  .qbtn:hover{background:var(--gm);color:var(--wh);}
+  .qbtn.dng{border-color:var(--r);color:var(--r);}
+  .qbtn.dng:hover{background:var(--r);color:var(--wh);}
+  .inp{padding:9px 12px 12px;display:flex;align-items:center;gap:7px;flex-shrink:0;border-top:1px solid var(--g200);background:var(--wh);}
+  .inp input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;border:1.5px solid var(--g200);border-radius:22px;padding:9px 14px;background:var(--g100);color:var(--tx);outline:none;transition:border-color .15s;}
+  .inp input:focus{border-color:var(--gm);background:var(--wh);}
+  .inp input::placeholder{color:var(--g400);}
+  .sbtn{width:38px;height:38px;border-radius:50%;background:var(--gm);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,transform .1s;}
+  .sbtn:hover{background:var(--gd);}.sbtn:active{transform:scale(.93);}
+  .sbtn svg{width:15px;height:15px;fill:white;}
+  .foot{background:#f0f7f3;border-top:1px solid var(--g200);padding:6px 14px;text-align:center;font-size:10px;color:var(--g400);flex-shrink:0;}
+  .foot strong{color:var(--gd);font-weight:600;}
+  .icard{background:var(--gp);border:1px solid var(--gl);border-radius:10px;padding:10px 13px;font-size:12.5px;color:var(--gd);line-height:1.5;}
+  .icard strong{font-weight:600;display:block;margin-bottom:3px;font-size:13px;}
+  .ucard{background:var(--rl);border:1px solid #F5C6C2;border-radius:10px;padding:10px 13px;font-size:12.5px;color:#7B1D15;line-height:1.5;}
+  .ucard strong{font-weight:600;display:block;margin-bottom:3px;}
+  .ucard .samu{font-size:19px;font-weight:600;color:var(--r);letter-spacing:1px;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="hdr">
+    <div class="avt">M</div>
+    <div class="hdr-info">
+      <div class="hdr-name">Maria</div>
+      <div class="hdr-sub">Hospital Municipal de Montes Claros de Goiás</div>
+    </div>
+    <div class="badge">Online</div>
+  </div>
+
+  <div class="msgs" id="msgs">
+    <div class="ddiv">Hoje</div>
+    <div class="msg bot">
+      <div class="bbl">🌾 Bem-vindo ao Hospital Municipal de Montes Claros de Goiás!<br><br>Sou a <strong>Maria</strong>, sua assistente virtual. Para começar, pode me dizer seu <strong>nome completo</strong>? 😊</div>
+      <div class="mtime" id="init-time"></div>
+    </div>
+  </div>
+
+  <div class="qarea hidden" id="qarea">
+    <button class="qbtn" onclick="qs('Horário de funcionamento')">Horário de funcionamento</button>
+    <button class="qbtn" onclick="qs('Como marcar uma consulta?')">Marcar consulta</button>
+    <button class="qbtn" onclick="qs('Documentos necessários')">Documentos</button>
+    <button class="qbtn dng" onclick="qs('Preciso de urgência')">Urgência / Emergência</button>
+  </div>
+
+  <div class="inp">
+    <input id="mi" type="text" placeholder="Digite seu nome completo..." onkeydown="if(event.key==='Enter')mSend()"/>
+    <button class="sbtn" onclick="mSend()">
+      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+    </button>
+  </div>
+  <div class="foot">Desenvolvido pelo <strong>FAEG Jovem</strong> de Montes Claros de Goiás</div>
+</div>
+
+<script>
+const DB = 'https://assistente-vitural-mcg-default-rtdb.firebaseio.com';
+const sessao = 'sessao_' + Date.now();
+
+let nomeProdutor = null;
+let etapaConsulta = null;
+let dadosConsulta = {sus:null,horario:null};
+let ultimoAtendente = null;
+
+function gt(){const d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');}
+document.getElementById('init-time').textContent = gt();
+
+function addMsg(content,tipo,isHtml){
+  const c=document.getElementById('msgs');
+  const d=document.createElement('div');d.className='msg '+tipo;
+  const b=document.createElement('div');b.className='bbl';
+  if(isHtml)b.innerHTML=content;else b.textContent=content;
+  const t=document.createElement('div');t.className='mtime';t.textContent=gt();
+  d.appendChild(b);d.appendChild(t);c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+
+function showTyping(){
+  const c=document.getElementById('msgs');
+  const t=document.createElement('div');t.className='msg bot';t.id='typ';
+  t.innerHTML='<div class="typ-bbl"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>';
+  c.appendChild(t);c.scrollTop=c.scrollHeight;
+}
+function removeTyping(){const t=document.getElementById('typ');if(t)t.remove();}
+
+// Envia mensagem para o Firebase
+async function fbEnviar(de, texto, isHtml){
+  await fetch(`${DB}/mensagens.json`, {
+    method:'POST',
+    body: JSON.stringify({de, texto, isHtml:!!isHtml, hora:gt(), nome:nomeProdutor||'Produtor', sessao, ts:Date.now()})
+  });
+}
+
+// Escuta respostas do atendente no Firebase
+let ultimoTs = Date.now();
+async function escutarAtendente(){
+  try {
+    const r = await fetch(`${DB}/respostas/${sessao}.json`);
+    const data = await r.json();
+    if(data && data.ts > ultimoTs){
+      ultimoTs = data.ts;
+      addMsg('👤 Atendente: ' + data.texto, 'bot', false);
+    }
+  } catch(e){}
+  setTimeout(escutarAtendente, 2000);
+}
+escutarAtendente();
+
+const respostas = {
+  "horário de funcionamento":{
+    html:`<div class="icard"><strong>Horários de atendimento</strong>Pronto-Socorro: <b>24 horas</b>, todos os dias.<br>Ambulatório: <b>segunda a sexta</b>, das 7h às 17h.<br>Exames: <b>segunda a sexta</b>, das 7h às 12h.</div>`,
+    followup:"Posso te ajudar com mais alguma informação?"
+  },
+  "como marcar uma consulta?":{
+    html:`<div class="icard"><strong>Vamos agendar sua consulta! 📋</strong>Por favor, me informe seu <b>número do Cartão do SUS</b> para continuar.</div>`,
+    followup:null, acao:'iniciar_consulta'
+  },
+  "documentos necessários":{
+    html:`<div class="icard"><strong>Documentos para atendimento</strong>• RG ou CPF<br>• Cartão do SUS (se tiver)<br>• Comprovante de residência<br>• Carteira de vacinação (para crianças)<br><br>Em casos de urgência, o atendimento não depende de documentos.</div>`,
+    followup:"Alguma outra dúvida?"
+  },
+  "preciso de urgência":{
+    html:`<div class="ucard"><strong>Urgência / Emergência</strong>Dirija-se imediatamente ao nosso <b>Pronto-Socorro</b>, que funciona <b>24 horas por dia, 7 dias por semana</b>.<br><br>Em caso de risco de vida, ligue agora:<br><span class="samu">SAMU 192</span></div>`,
+    followup:null
+  }
+};
+
+function reply(txt){
+  if(etapaConsulta==='aguardando_sus'){
+    dadosConsulta.sus=txt;
+    etapaConsulta='aguardando_horario';
+    showTyping();
+    setTimeout(()=>{
+      removeTyping();
+      const html=`<div class="icard"><strong>Cartão do SUS registrado! ✅</strong>Agora me informe o <b>horário de preferência</b>:<br><br>• Digite <b>manhã</b> — 7h às 11h<br>• Digite <b>tarde</b> — 13h às 16h<br><br>Atendemos <b>segunda a sexta</b>.</div>`;
+      addMsg(html,'bot',true);
+      fbEnviar('Maria (auto)', html, true);
+    },1000);
+    return;
+  }
+  if(etapaConsulta==='aguardando_horario'){
+    const h=txt.toLowerCase();
+    let horarioTexto;
+    if(h.includes('manhã')||h.includes('manha')) horarioTexto='manhã — às 8h00';
+    else if(h.includes('tarde')) horarioTexto='tarde — às 14h00';
+    else{
+      showTyping();
+      setTimeout(()=>{removeTyping();addMsg('Por favor, digite <b>manhã</b> ou <b>tarde</b> para confirmar o horário. 😊','bot',true);},800);
+      return;
+    }
+    etapaConsulta=null; dadosConsulta.horario=horarioTexto;
+    showTyping();
+    setTimeout(()=>{
+      removeTyping();
+      const html=`<div class="icard"><strong>✅ Consulta agendada com sucesso!</strong>Olá, <b>${nomeProdutor}</b>! Sua consulta foi marcada:<br><br>📋 <b>Cartão do SUS:</b> ${dadosConsulta.sus}<br>🕐 <b>Horário:</b> ${horarioTexto}<br>📍 <b>Local:</b> Hospital Municipal de Montes Claros de Goiás<br>📅 <b>Dias:</b> Segunda a sexta<br><br>Lembre-se de trazer <b>RG ou CPF</b> e <b>comprovante de residência</b>. Até logo! 😊</div>`;
+      addMsg(html,'bot',true);
+      fbEnviar('Maria (auto)', `✅ Consulta agendada!\nNome: ${nomeProdutor}\nCartão SUS: ${dadosConsulta.sus}\nHorário: ${horarioTexto}`, false);
+      dadosConsulta={sus:null,horario:null};
+    },1200);
+    return;
+  }
+
+  showTyping();
+  setTimeout(()=>{
+    removeTyping();
+    const k=txt.toLowerCase().trim();
+    let r=respostas[k];
+    if(!r){for(const x in respostas){if(x.split(' ').some(w=>w.length>3&&k.includes(w))){r=respostas[x];break;}}}
+    if(r){
+      addMsg(r.html,'bot',true);
+      fbEnviar('Maria (auto)', r.html, true);
+      if(r.acao==='iniciar_consulta') etapaConsulta='aguardando_sus';
+      if(r.followup){
+        setTimeout(()=>{showTyping();setTimeout(()=>{removeTyping();addMsg(r.followup,'bot',false);fbEnviar('Maria (auto)',r.followup,false);},800);},400);
+      }
+    } else {
+      const resp="Entendi! Para informações mais específicas, entre em contato com nossa recepção. Posso te ajudar com mais alguma coisa?";
+      addMsg(resp,'bot',false);
+      fbEnviar('Maria (auto)',resp,false);
+    }
+  },1200);
+}
+
+function mSend(){
+  const i=document.getElementById('mi');
+  const t=i.value.trim();if(!t)return;
+  i.value='';
+  if(!nomeProdutor){
+    nomeProdutor=t;
+    addMsg(t,'usr',false);
+    document.getElementById('mi').placeholder='Digite sua mensagem...';
+    showTyping();
+    setTimeout(()=>{
+      removeTyping();
+      const boas=`Olá, <strong>${nomeProdutor}</strong>! 😊 Que bom ter você aqui.<br><br>Sou a <strong>Maria</strong>, assistente virtual do Hospital Municipal de Montes Claros de Goiás. Como posso te ajudar hoje?`;
+      addMsg(boas,'bot',true);
+      fbEnviar('sistema', `🌾 <b>${nomeProdutor}</b> entrou em contato.`, true);
+      document.getElementById('qarea').classList.remove('hidden');
+    },1000);
+    return;
+  }
+  document.getElementById('qarea').classList.add('hidden');
+  addMsg(t,'usr',false);
+  fbEnviar(nomeProdutor, t, false);
+  reply(t);
+}
+
+function qs(t){
+  document.getElementById('qarea').classList.add('hidden');
+  addMsg(t,'usr',false);
+  fbEnviar(nomeProdutor||'Produtor Rural', t, false);
+  reply(t);
+}
+</script>
+</body>
+</html>
